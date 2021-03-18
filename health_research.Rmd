@@ -1,0 +1,82 @@
+---
+title: "health_research"
+author: "Gabe Cederberg"
+date: "3/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load packages
+
+library(tidyverse)
+library(readr)
+library(janitor)
+library(ggthemes)
+library(viridis)  
+library(tidycensus)
+library(transformr)
+library(lubridate)
+library(RColorBrewer)
+library(scales)
+library(tmaptools)
+library(patchwork)
+library(RCurl)
+library(readxl)
+library(zoo)
+
+# Turn off scientific notation
+
+options(scipen = 999)
+
+# Cache shapefiles for use in future sessions
+
+options(tigris_use_cache = TRUE)
+```
+
+```{r}
+
+state_pop <- get_acs(geography = "state",
+                  variables = c(pop = "B01003_001"), 
+                  year = 2018,
+                  geometry = TRUE,
+                  shift_geo = TRUE) %>% 
+  clean_names() %>% 
+   select(geoid, 
+          state_name = name, 
+          "pop" = estimate,
+          "state_geometry" = geometry)  
+
+a <- read_csv("raw_data.csv", skip = 2) %>% 
+  clean_names() %>% 
+  filter(location != "United States") %>% 
+  select("state" = location,
+         uninsured)
+
+b <- state_pop %>% 
+  right_join(a, by = c("state_name" = "state"))
+
+theme1 <- theme(plot.title = element_text(size = 16),
+        legend.title = element_blank(),
+        plot.subtitle = element_text(color = "gray50"),
+        legend.text = element_text(size = 10),
+        legend.position = "right",
+        legend.key.width = unit(0.5, "cm"))
+
+b %>% ggplot() +
+  geom_sf(aes(fill = uninsured * 100), color = alpha("white", 1 / 2), size = 0.1) +
+  geom_sf(data = state_pop, fill = NA, color = "white") +
+  theme_void() +
+  scale_fill_viridis_c(name = "% Uninsured
+                        ", limits = c(3, 20), breaks = c(5, 10, 15, 20),
+                        labels=c("5%", "10%", "15%", "20%"),
+                        option = "B",
+                        direction = -1) +
+   labs(title = "Uninsured Rate by State, 2019",
+        subtitle = "Non-expansion states typically have much higher uninsured rates",
+        caption = "Data from KFF analysis of the Census Bureau’s 2019 American Community Survey (ACS)") +
+   theme1
+
+```
+
