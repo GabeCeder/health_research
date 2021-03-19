@@ -68,15 +68,19 @@ b %>% ggplot() +
   geom_sf(aes(fill = uninsured * 100), color = alpha("white", 1 / 2), size = 0.1) +
   geom_sf(data = state_pop, fill = NA, color = "white") +
   theme_void() +
-  scale_fill_viridis_c(name = "% Uninsured
-                        ", limits = c(3, 20), breaks = c(5, 10, 15, 20),
-                        labels=c("5%", "10%", "15%", "20%"),
-                        option = "B",
-                        direction = -1) +
+     scale_fill_gradientn(name = "% Uninsured", colors = c("#ffffff", "#00264d"),
+                        limits = c(2, 20), breaks = c(5, 10, 15, 20),
+                         labels=c("5%", "10%", "15%", "20%")) +
+  # scale_fill_viridis_c(name = "% Uninsured
+  #                       ", limits = c(3, 20), breaks = c(5, 10, 15, 20),
+  #                       labels=c("5%", "10%", "15%", "20%"),
+  #                       option = "B",
+  #                       direction = -1) +
    labs(title = "Uninsured Rate by State, 2019",
-        subtitle = "Non-expansion states typically have much higher uninsured rates",
-        caption = "Data from KFF analysis of the Census Bureau’s 2019 American Community Survey (ACS)") +
+        subtitle = "Non-Medicaid expansion states typically have much higher uninsured rates",
+        caption = "    Data from KFF analysis of the Census Bureau’s 2019 American Community Survey (ACS)") +
    theme1
 
+ggsave(filename = "uninsured_map.jpg", path = "~/Desktop/Projects/health_research", plot = last_plot(), width = 7, height = 4, dpi = 400)
 ```
 
